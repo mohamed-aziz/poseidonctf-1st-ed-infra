@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctfd
+  labels:
+    app: ctfd
+    tier: webapp
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+      app: ctfd
+      tier: webapp
+  template:
+    metadata:
+      labels:
+        app: ctfd
+        tier: webapp
+    spec:
+      volumes:
+        - name: ctfd-uploads-volume
+          persistentVolumeClaim:
+            claimName: my-azure-file
+      securityContext:
+        fsGroup: 1001            
+      containers:
+        - name: ctfd
+          image: 7727f69da2ce7d4663076682b81e621a.azurecr.io/ctfd:3.0.0
+          volumeMounts:
+            - mountPath: /var/uploads/
+              name: ctfd-uploads-volume
+          # resources:
+          #   requests:
+          #     memory: "200Mi"
+          #     cpu: "250m"
+          #   limits:            
+          #     memory: "2Gi"
+          #     cpu: "500m"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                    name: mysql-pass
+                    key: password
+            - name: DATABASE_URL
+              value: mysql+pymysql://ctfd:kjGw1nurHD3kHaeW@ctfd-mysql:3306/ctfd
+            - name: LOG_FOLDER
+              value: /var/log/CTFd
+            - name: REVERSE_PROXY
+              value: "false"
+            - name: REDIS_URL
+              value: redis://redis-master:6379
+            - name: UPLOAD_FOLDER
+              value: /var/uploads/
+            - name: CACHE_TYPE
+              value: redis
+            - name: SECRET_KEY 
+              valueFrom:
+                secretKeyRef:
+                  name: ctfd-gunicorn-worker-secret
+                  key: worker-secret
+  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctfd
+  labels:
+    app: ctfd
+    tier: webapp
+spec:
+  type: LoadBalancer
+  selector:
+    app: ctfd
+    tier: webapp
+  ports:
+   - name: http
+     port: 80
+     targetPort: 8000
+     protocol: TCP
+# ---
+# apiVersion: autoscaling/v1
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: ctfd-hpa
+# spec:
+#   maxReplicas: 80 # define max replica count
+#   minReplicas: 8  # define min replica count
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: ctfd
+#   targetCPUUtilizationPercentage: 50 # target CPU utilization

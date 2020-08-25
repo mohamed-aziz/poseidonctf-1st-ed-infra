@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-cards
+  labels:
+    chall: chall-cards
+    category: pwn
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-cards
+        category: pwn
+  template:
+    metadata:
+      labels:
+        chall: chall-cards
+        category: pwn
+    spec:
+      containers:
+        - name: cards
+          image: poseidonchalls.azurecr.io/cards:latest
+          ports:
+            - containerPort: 10111
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-cards
+  labels:
+    chall: chall-cards
+    category: pwn
+spec:
+  type: ClusterIP
+  selector:
+    chall: chall-cards
+    category: pwn
+  ports:
+   - name: http
+     port: 9004
+     targetPort: 10111
+     protocol: TCP

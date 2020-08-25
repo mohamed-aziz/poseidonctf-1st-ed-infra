@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-vmrevange
+  labels:
+    chall: chall-vmrevange
+    category: pwn
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+        chall: chall-vmrevange
+        category: pwn
+  template:
+    metadata:
+      labels:
+        chall: chall-vmrevange
+        category: pwn
+    spec:
+      containers:
+        - name: vmrevange
+          image: poseidonchalls.azurecr.io/vmrevange_grevenge:latest
+          ports:
+            - containerPort: 9997
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "0.2"
+            requests:
+              cpu: "0.1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-vmrevange
+  labels:
+    chall: chall-vmrevange
+    category: pwn
+spec:
+  type: ClusterIP
+  selector:
+    chall: chall-vmrevange
+    category: pwn
+  ports:
+   - name: http
+     port: 9001
+     targetPort: 9997
+     protocol: TCP

@@ -1,0 +1,18 @@
+kind: Kustomization
+
+secretGenerator:
+    - name: oldrick-mysql-pass
+      literals:
+      - password=R1cKs_Ung3s5b4L3_P45sw0Rd
+
+resources:
+  - ingress.yml
+  - oldrick.yml
+  - vmrevange.yml
+  - oldnote.yml
+  - grocery.yml
+  - newrick.yml
+  - cutebabycats.yml
+  - interview.yml
+  - warmupre.yml
+  - cards.yml

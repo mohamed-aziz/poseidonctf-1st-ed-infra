@@ -1,0 +1,14 @@
+kind: Kustomization
+
+secretGenerator:
+    - name: mysql-pass
+      literals:
+      - password=XXXXXXXXXXXXXXXX
+    - name: ctfd-gunicorn-worker-secret
+      literals:
+        - worker-secret=b'XXXXXXXXXXXXXXXX'
+
+resources:
+    - mysql-deployment.yml
+    - ctfd.yml
+    - redis-deployment.yml

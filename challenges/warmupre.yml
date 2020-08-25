@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-warmupre
+  labels:
+    chall: chall-warmupre
+    category: rev
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-warmupre
+        category: rev
+  template:
+    metadata:
+      labels:
+        chall: chall-warmupre
+        category: rev
+    spec:
+      containers:
+        - name: warmupre
+          image: poseidonchalls.azurecr.io/warmupre:latest
+          ports:
+            - containerPort: 9999
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-warmupre
+  labels:
+    chall: chall-warmupre
+    category: rev
+spec:
+#  type: LoadBalancer
+  selector:
+    chall: chall-warmupre
+    category: rev
+  ports:
+   - name: tcpport
+     port: 9003
+     targetPort: 9999
+     protocol: TCP

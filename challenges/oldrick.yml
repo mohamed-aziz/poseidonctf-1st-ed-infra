@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-oldrick
+  labels:
+    chall: chall-oldrick
+    category: web
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-oldrick
+        category: web
+  template:
+    metadata:
+      labels:
+        chall: chall-oldrick
+        category: web
+    spec:
+      containers:
+        - name: oldrick
+          image: poseidonchalls.azurecr.io/oldrick:latest
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+        - name: db
+          image: mysql:5.7.29
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oldrick-mysql-pass
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: oldrick-mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: oldrick-mysql-initdb
+          configMap:
+            name: oldrick-mysql-initdb-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oldrick-mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE USER 'Rick'@'%' IDENTIFIED BY 'R1cKs_Ung3s5b4L3_P45sw0Rd';
+    CREATE DATABASE rick_secrets;
+    USE rick_secrets;
+    CREATE TABLE top_secrets (
+            id INT(1) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            secret VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL
+    );
+    INSERT INTO top_secrets VALUES(1, 'r1cks');
+    GRANT SELECT ON rick_secrets.top_secrets TO 'Rick'@'%';
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-oldrick
+#   annotations:
+#     service.beta.kubernetes.io/azure-dns-label-name: poseidon-oldrick
+  labels:
+    chall: chall-oldrick
+    category: web
+spec:
+  #type: LoadBalancer
+  type: ClusterIP
+  selector:
+    chall: chall-oldrick
+    category: web
+  ports:
+   - name: http
+     port: 20000
+     targetPort: 80
+     protocol: TCP

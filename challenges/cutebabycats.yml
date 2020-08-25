@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-cutebabycats
+  labels:
+    chall: chall-cutebabycats
+    category: crypto
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-cutebabycats
+        category: crypto
+  template:
+    metadata:
+      labels:
+        chall: chall-cutebabycats
+        category: crypto
+    spec:
+      containers:
+        - name: cutebabycats
+          image: poseidonchalls.azurecr.io/cutebabycats:latest
+          ports:
+            - containerPort: 10101
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-cutebabycats
+  labels:
+    chall: chall-cutebabycats
+    category: crypto
+spec:
+#  type: LoadBalancer
+  selector:
+    chall: chall-cutebabycats
+    category: crypto
+  ports:
+   - name: tcpport
+     port: 10000
+     targetPort: 10101
+     protocol: TCP

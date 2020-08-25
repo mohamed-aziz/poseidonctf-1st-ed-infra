@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-grocery
+  labels:
+    chall: chall-grocery
+    category: pwn
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-grocery
+        category: pwn
+  template:
+    metadata:
+      labels:
+        chall: chall-grocery
+        category: pwn
+    spec:
+      containers:
+        - name: grocery
+          image: poseidonchalls.azurecr.io/grocery:latest
+          ports:
+            - containerPort: 9998
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-grocery
+  labels:
+    chall: chall-grocery
+    category: pwn
+spec:
+  type: ClusterIP
+  selector:
+    chall: chall-grocery
+    category: pwn
+  ports:
+   - name: http
+     port: 9002
+     targetPort: 9998
+     protocol: TCP

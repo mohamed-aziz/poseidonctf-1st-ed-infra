@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-newrick
+  labels:
+    chall: chall-newrick
+    category: web
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-newrick
+        category: web
+  template:
+    metadata:
+      labels:
+        chall: chall-newrick
+        category: web
+    spec:
+      securityContext:
+        fsGroup: 1001            
+    
+      containers:
+        - name: newrick
+          image: poseidonchalls.azurecr.io/newrick:latest
+          # resources:
+          #   limits:
+          #     cpu: "0.2"
+          #   requests:
+          #     cpu: "0.1"
+
+          ports:
+            - containerPort: 6565
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /home/ctf/ricksess
+              name: newrick-ricksess-volume
+            - mountPath: /home/ctf/letters
+              name: newrick-letters-volume
+      volumes:
+        - name: newrick-ricksess-volume
+          persistentVolumeClaim:
+            claimName: shared-folder-chall
+        - name: newrick-letters-volume
+          persistentVolumeClaim:
+            claimName: shared-folder-chall2
+  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-newrick
+  labels:
+    chall: chall-newrick
+    category: web
+spec:
+  type: ClusterIP
+  selector:
+    chall: chall-newrick
+    category: web
+  ports:
+   - name: http
+     port: 20001
+     targetPort: 6565
+     protocol: TCP

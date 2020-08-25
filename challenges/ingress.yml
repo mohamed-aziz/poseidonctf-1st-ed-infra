@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-basic
+data:
+  20000: ingress-basic/chall-oldrick:20000
+  20001: ingress-basic/chall-newrick:20001
+  20002: ingress-basic/chall-interview:20002
+  9000:  ingress-basic/chall-oldnote:9000
+  9001:  ingress-basic/chall-vmrevange:9001
+  9002: ingress-basic/chall-grocery:9002
+  9003: ingress-basic/chall-warmupre:9003
+  9004: ingress-basic/chall-cards:9004
+  10000: ingress-basic/chall-cutebabycats:10000

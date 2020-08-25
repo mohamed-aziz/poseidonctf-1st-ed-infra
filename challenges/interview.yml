@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-interview
+  labels:
+    chall: chall-interview
+    category: web
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-interview
+        category: web
+  template:
+    metadata:
+      labels:
+        chall: chall-interview
+        category: web
+    spec:
+      containers:
+        - name: interview
+          image: poseidonchalls.azurecr.io/interview:latest
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c 
+                - touch /tmp/healthy; sleep 60; rm -rf /tmp/healthy
+            initialDelaySeconds: 0
+            #periodSeconds: 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-interview
+  labels:
+    chall: chall-interview
+    category: web
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  selector:
+    chall: chall-interview
+    category: web
+  ports:
+   - name: tcpport
+     port: 20002
+     targetPort: 80
+     protocol: TCP
+  sessionAffinity: ClientIP

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chall-oldnote
+  labels:
+    chall: chall-oldnote
+    category: pwn
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+        chall: chall-oldnote
+        category: pwn
+  template:
+    metadata:
+      labels:
+        chall: chall-oldnote
+        category: pwn
+    spec:
+      containers:
+        - name: oldnote
+          image: poseidonchalls.azurecr.io/oldnote:latest
+          ports:
+            - containerPort: 9999
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chall-oldnote
+  labels:
+    chall: chall-oldnote
+    category: pwn
+spec:
+#  type: LoadBalancer
+  selector:
+    chall: chall-oldnote
+    category: pwn
+  ports:
+   - name: tcpport
+     port: 9000
+     targetPort: 9999
+     protocol: TCP
